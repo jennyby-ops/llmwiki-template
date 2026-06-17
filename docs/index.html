@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLMwiki 워크플로우 — 실습 가이드</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2230; --border:#2d333b;
+    --fg:#e6edf3; --muted:#9aa7b4; --accent:#ffd400; --accent2:#58a6ff;
+    --green:#3fb950; --code:#0b0f14;
+    --mono:"SF Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",Segoe UI,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;font-size:16px}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{display:flex;max-width:1180px;margin:0 auto}
+  nav{position:sticky;top:0;align-self:flex-start;width:236px;height:100vh;padding:32px 18px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0}
+  nav .brand{font-weight:800;font-size:18px;margin-bottom:4px}
+  nav .brand b{color:var(--accent)}
+  nav .sub{color:var(--muted);font-size:12px;margin-bottom:24px}
+  nav a{display:block;color:var(--muted);padding:7px 10px;border-radius:7px;font-size:14px;margin-bottom:2px}
+  nav a:hover{background:var(--panel);color:var(--fg);text-decoration:none}
+  nav .grp{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#6b7785;margin:18px 0 6px 10px}
+  main{flex:1;padding:48px 56px;min-width:0}
+  .hero{border-left:4px solid var(--accent);padding:6px 0 6px 22px;margin-bottom:40px}
+  .hero h1{font-size:34px;margin:0 0 10px;line-height:1.25}
+  .hero p{color:var(--muted);font-size:17px;margin:0}
+  h2{font-size:24px;margin:52px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  h2 .n{color:var(--accent);font-family:var(--mono);font-size:18px;margin-right:10px}
+  h3{font-size:18px;margin:28px 0 8px}
+  p{margin:10px 0}
+  .lead{font-size:17px}
+  code{font-family:var(--mono);background:var(--panel2);padding:2px 6px;border-radius:5px;font-size:.88em;color:#ffe88a}
+  pre{position:relative;background:var(--code);border:1px solid var(--border);border-radius:10px;padding:18px;overflow-x:auto;margin:14px 0}
+  pre code{background:none;padding:0;color:#d6dee8;font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-all}
+  pre.prompt{border-color:#3a4a2a;background:#0e1410}
+  pre.prompt::before{content:"📋 복붙용 프롬프트";position:absolute;top:-10px;left:14px;background:var(--green);color:#06140a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;font-family:var(--sans)}
+  pre.prompt code{color:#cfe9c4}
+  .copy{position:absolute;top:10px;right:10px;background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-size:11px;padding:4px 9px;border-radius:6px;cursor:pointer;font-family:var(--sans)}
+  .copy:hover{color:var(--fg);border-color:var(--accent2)}
+  .copy.ok{color:var(--green);border-color:var(--green)}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:16px 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:18px 0}
+  .grid .card{margin:0}
+  .grid .card h4{margin:0 0 6px;font-size:15px}
+  .grid .card.raw{border-top:3px solid #f78166}
+  .grid .card.wiki{border-top:3px solid var(--accent)}
+  .grid .card.share{border-top:3px solid var(--accent2)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+  .two .card{margin:0}
+  .tag{display:inline-block;font-size:11px;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:var(--panel2);color:var(--muted);margin-bottom:8px}
+  .muted{color:var(--muted)}
+  .step{display:flex;gap:16px;margin:22px 0}
+  .step .num{flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#000;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+  .step .body{flex:1;min-width:0}
+  .step .body h3{margin-top:2px}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+  th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);font-weight:600}
+  td code{font-size:12.5px}
+  .callout{border-left:3px solid var(--accent2);background:var(--panel);padding:12px 18px;border-radius:0 8px 8px 0;margin:16px 0}
+  .callout.warn{border-color:#f78166}
+  .callout.tip{border-color:var(--green)}
+  details{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px 18px;margin:16px 0}
+  summary{cursor:pointer;font-weight:600;padding:8px 0}
+  footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--border);color:var(--muted);font-size:13px}
+  .pill{display:inline-block;background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:12px;color:var(--muted);margin:0 6px 6px 0}
+  .flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:13px;color:var(--muted);margin:8px 0}
+  .flow b{color:var(--accent);background:var(--panel2);padding:4px 10px;border-radius:6px}
+  /* confluence mock */
+  .mock{border:1px solid var(--border);border-radius:10px;overflow:hidden;max-width:520px;margin:12px 0;background:var(--panel)}
+  .mockbar{display:flex;align-items:center;gap:5px;padding:8px 12px;background:#1f6feb22;border-bottom:1px solid var(--border);font-size:12px}
+  .mockbar .dot{width:9px;height:9px;border-radius:50%;background:#3a4250;display:inline-block}
+  .hi-box{border:2px solid #f78166;border-radius:6px;padding:2px 8px;color:var(--fg)}
+  .menu{padding:6px;max-width:200px}
+  .menu .mi{padding:7px 12px;font-size:13px;color:var(--muted);border-radius:6px}
+  .menu .mi.hi{border:2px solid #f78166;color:var(--fg);font-weight:600;background:#f7816615}
+  .urlbar{font-family:var(--mono);font-size:14px;background:var(--code);border:1px solid var(--border);border-radius:24px;padding:11px 18px;margin:10px 0;overflow-x:auto;white-space:nowrap}
+  .urlbar .u{color:var(--muted)}
+  .urlbar .u.key{color:#06140a;background:var(--accent);padding:2px 6px;border-radius:5px;font-weight:700}
+  .urlbar .u.pid{color:#06140a;background:#58a6ff;padding:2px 6px;border-radius:5px;font-weight:700}
+  .urlnote{margin:6px 0 4px;font-size:14px;line-height:2}
+  .urlnote .sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:7px;vertical-align:middle}
+  .urlnote .sw.key{background:var(--accent)}
+  .urlnote .sw.pid{background:#58a6ff}
+  @media(max-width:860px){
+    nav{display:none}
+    main{padding:28px 20px}
+    .grid,.two{grid-template-columns:1fr}
+    .hero h1{font-size:26px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="brand"><b>LLM</b>wiki</div>
+    <div class="sub">PM 워크플로우 실습 가이드</div>
+    <a href="#why">왜 필요한가</a>
+    <a href="#what">LLMwiki란</a>
+    <a href="#layers">3레이어 구조</a>
+    <a href="#ops">핵심 동작 4개</a>
+    <div class="grp">실습</div>
+    <a href="#setup">0. 준비물</a>
+    <a href="#s1">1. 초기화 (경로 주기)</a>
+    <a href="#s2">2. 누적 (소스)</a>
+    <a href="#s3">3. 다음 세션</a>
+    <a href="#s4">4. 계속 쌓기</a>
+    <a href="#s5" style="color:#f78166">5. GitHub 백업 · 심화</a>
+    <a href="#s6" style="color:#f78166">6. Confluence 발행 · 심화</a>
+    <div class="grp">참고</div>
+    <a href="#claudemd">CLAUDE.md 전문</a>
+    <a href="#prompts">복붙 프롬프트</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <h1>Claude Code를 PM 업무의 <span style="color:var(--accent)">협업자</span>로 쓰는 법</h1>
+      <p>경로만 주면 자라나는 위키 — LLMwiki 워크플로우</p>
+    </div>
+    <p class="lead">물류플랫폼팀 AI 스터디 · 발표자 jenny.by · 클론 없이, <b>프롬프트 2개</b>로 본인 업무용 위키를 만들고 키웁니다.</p>
+
+    <h2 id="why"><span class="n">00</span>왜 필요한가</h2>
+    <p>AI에게 업무를 시켜본 사람은 안다. <b>매번 처음부터 설명해야 한다.</b> "우리 팀은 미들마일이고, 이 기획서는 v1.6이고…" 세션이 끝나면 그 맥락은 전부 사라진다.</p>
+    <div class="callout warn"><b>컨텍스트 소실 문제</b> — LLM은 대화가 끝나면 기억하지 못한다. 그래서 매 세션 같은 설명을 반복하고, 결과물의 포맷·깊이가 들쭉날쭉해진다.</div>
+    <p>LLMwiki는 이걸 <b>파일로</b> 푼다. 업무 컨텍스트와 작동 규칙을 <code>CLAUDE.md</code>에 한 번 적어두면, Claude Code가 매 세션 그 파일부터 읽고 시작한다.</p>
+
+    <h2 id="what"><span class="n">01</span>LLMwiki란</h2>
+    <p>원본(raw)과 AI가 구조화한 위키(wiki), 팀 공유처를 분리한 <b>문서 관리 패턴</b>이다. 핵심은 폴더가 아니라 <b>AI에게 주는 규칙</b> — 그래서 <b>클론할 고정 템플릿이 아니라, 경로만 주면 자라난다.</b></p>
+
+    <h2 id="layers"><span class="n">02</span>3레이어 구조</h2>
+    <div class="grid">
+      <div class="card raw"><span class="tag">읽기 전용</span><h4>raw/</h4><p class="muted">원본 기획서·문서·데이터. AI가 절대 수정하지 않는다. 출처 추적용.</p></div>
+      <div class="card wiki"><span class="tag">진실의 원본</span><h4>wiki/</h4><p class="muted">Claude가 구조화해 관리. 사람과 AI가 같은 문서를 본다.</p></div>
+      <div class="card share"><span class="tag">선택</span><h4>공유처</h4><p class="muted">Confluence·Notion 등 팀 공유. wiki에서 동기화.</p></div>
+    </div>
+
+    <h2 id="ops"><span class="n">03</span>핵심 동작 4개</h2>
+    <p>이 위키는 네 명령으로 굴러간다. <b>사람은 경로/소스만 주고, 나머지 절차는 Claude가 규칙대로 한다.</b></p>
+    <div class="grid">
+      <div class="card"><span class="tag" style="color:var(--accent)">동작 A</span><h4>초기화 — 최초 1회</h4><p class="muted">상위 폴더 경로를 주면 → Claude가 <b>로컬용 CLAUDE.md</b> + <code>wiki/</code> 기초 트리를 만든다.</p></div>
+      <div class="card"><span class="tag" style="color:var(--green)">동작 B</span><h4>누적 — 반복</h4><p class="muted">소스(Confluence 링크 등)만 던지면 → <code>wiki/{프로젝트}/</code>에 정리해 쌓고 index·log를 갱신한다.</p></div>
+      <div class="card"><span class="tag" style="color:var(--accent2)">동작 C</span><h4>조회</h4><p class="muted">"프로젝트 목록 보여줘" → 쌓인 프로젝트를 나열. 골라서 확인 요청.</p></div>
+      <div class="card" style="border-top:3px solid #f78166"><span class="tag" style="color:#f78166">동작 D · 심화</span><h4>발행</h4><p class="muted">"컨플루언스에 올려줘 / GitHub에 push해줘" → 팀 공유처로 내보낸다. <b>연동된 사람만.</b></p></div>
+    </div>
+    <div class="callout tip"><b>성숙도 사다리</b> — ① 로컬 위키(누구나, 오늘 실습) → ② GitHub 백업(git 있으면) → ③ Confluence 발행(MCP 연동 시). 아래로 갈수록 강력하지만 주의도 커진다.</div>
+
+    <h2 id="setup"><span class="n">04</span>실습 — 0. 준비물</h2>
+    <div class="card">
+      <p style="margin-top:0"><b>기본 (1~4단계, 누구나)</b></p>
+      <span class="pill">Claude Code 설치</span>
+      <span class="pill">위키화할 소스 1개 (Confluence URL·파일·링크)</span>
+      <p style="margin-bottom:4px"><b>심화 (5·6단계, 선택)</b></p>
+      <span class="pill">git + GitHub 인증 → 5단계</span>
+      <span class="pill">Atlassian(Confluence) MCP 연결 → 6단계</span>
+      <p class="muted" style="margin-bottom:0">Claude Code가 없다면: <a href="https://docs.claude.com/claude-code" target="_blank">docs.claude.com/claude-code</a> · 심화 연동이 없으면 1~4단계만 해도 완결됩니다.</p>
+    </div>
+
+    <h2 id="s1">1. 초기화 — 경로만 주기</h2>
+    <div class="callout"><b>CLAUDE.md가 2개로 나뉜다</b> — 아래 URL의 <b>공유용</b>(레시피)을 Claude가 읽고, 내 폴더에 정보가 채워진 <b>로컬용</b>을 새로 만든다. 그 로컬용이 이후 매 세션 <b>자동으로 읽히는</b> 작동 규칙이 된다.</div>
+    <div class="step"><div class="num">1</div><div class="body">
+      <p>아무 빈 폴더나 정하고, Claude Code에 <b>경로</b>를 주며 아래를 붙여넣는다. (클론·다운로드 불필요, <b>업무/팀 입력 안 해도 됨</b>)</p>
+      <pre class="prompt"><code>내 LLM wiki를 여기에 만들어줘: ~/work/my-wiki
+
+아래 URL은 "공유용 CLAUDE.md 레시피"야. 이걸 읽고
+"로컬용 CLAUDE.md"와 기초 트리(raw/ + wiki/index·log·cross_issues)를 만들어줘.
+https://jennyby-ops.github.io/llmwiki-template/CLAUDE.md</code></pre>
+      <p class="muted">→ Claude가 <b>로컬용 CLAUDE.md</b> + 기초 폴더를 만들고 log.md에 INIT를 기록한다. 프로젝트 폴더는 아직 안 만든다 — 소스가 들어올 때 생긴다. 이후 같은 폴더를 열면 로컬용이 자동으로 읽혀, CLAUDE.md를 언급하지 않아도 규칙대로 작동한다.<br><span style="color:#6b7785">※ 팀과 공유할 거면 <code>관리자: 이름 / 팀: 팀명</code> 한 줄만 덧붙이면 메타에 적힌다.</span></p>
+    </div></div>
+
+    <h2 id="s2">2. 누적 — 소스만 던지기</h2>
+    <div class="step"><div class="num">2</div><div class="body">
+      <p>위키화할 소스를 던진다. 위키 페이지든, Figma 링크든, 첨부파일이든. <b>한 줄이면 된다.</b></p>
+      <pre class="prompt"><code>이 소스 wiki화해줘:
+https://wiki.daumkakao.com/pages/viewpage.action?pageId=000000</code></pre>
+      <p class="muted">→ Claude가 페이지를 읽고 <code>wiki/{프로젝트}/</code> 4파일을 생성, 출처 URL을 명시하고 대시보드·이력을 갱신한다. <b>6섹션·다이어그램 분리·index/log 갱신은 CLAUDE.md가 자동 처리</b>라 매번 지시할 필요가 없다. 프로젝트명도 Claude가 판단(애매하면 물어봄) — 직접 정하려면 <code>프로젝트명은 ○○으로</code>만 덧붙이면 된다.</p>
+    </div></div>
+
+    <h2 id="s3">3. 다음 세션부터</h2>
+    <div class="step"><div class="num">3</div><div class="body">
+      <p>새 세션에서 한 마디만:</p>
+      <pre class="prompt"><code>이 프로젝트 파악해줘</code></pre>
+      <p>Claude가 <code>CLAUDE.md → index.md → log.md → cross_issues.md</code> 순으로 읽고 지난 맥락 위에서 이어간다. <b>다시 설명할 필요가 없다.</b></p>
+    </div></div>
+
+    <h2 id="s4">4. 계속 쌓고, 골라 보기</h2>
+    <div class="step"><div class="num">4</div><div class="body">
+      <p>그 다음은 동작 B의 반복이다. 소스를 줄 때마다 프로젝트가 쌓인다.</p>
+      <div class="flow"><b>소스 던지기</b> → <b>wiki화</b> → <b>index·log 갱신</b> → <b>(반복)</b></div>
+      <p>쌓인 게 많아지면 목록으로 훑고 골라 본다:</p>
+      <pre class="prompt"><code>프로젝트 목록 보여줘</code></pre>
+      <p class="muted">→ Claude가 index.md 기준으로 <b>프로젝트·버전·상태</b>를 표로 나열한다. 그중 하나를 고르면 해당 overview를 읽어 요약해준다. 여러 프로젝트에 걸친 미결사항은 <code>cross_issues.md</code>로 통합 관리된다.</p>
+    </div></div>
+
+    <div class="callout warn" style="margin-top:40px"><b>여기까지가 "누구나 / 오늘 실습" 범위다.</b> 아래 5·6은 <b>연동이 돼 있는 사람만</b> 따라하는 심화(동작 D)다. 실제 GitHub·Confluence에 쓰므로 주의해서 진행한다.</div>
+
+    <h2 id="s5">5. GitHub 백업 <span style="font-size:13px;color:#f78166">· 심화</span></h2>
+    <div class="step"><div class="num" style="background:#f78166">5</div><div class="body">
+      <p><b>전제</b>: 로컬에 <code>git</code> + GitHub 인증(<code>gh</code> 또는 SSH). 위키 폴더를 버전관리·백업·공유한다.</p>
+      <pre class="prompt"><code>이 위키를 GitHub에 올려줘. 내부 기획 내용이 있으니 private 레포로.</code></pre>
+      <div class="callout warn"><b>⚠️ private가 기본</b> — 위키엔 내부 기획이 섞이기 쉽다. public 전환은 "공개해도 되는 내용만 있는지" 직접 확인한 뒤에만. <code>.env</code>·원본 기획서 등 민감 파일은 <code>.gitignore</code>로 빼는지 Claude가 점검한다.</div>
+    </div></div>
+
+    <h2 id="s6">6. Confluence 발행 <span style="font-size:13px;color:#f78166">· 심화</span></h2>
+    <div class="step"><div class="num" style="background:#f78166">6</div><div class="body">
+      <p><b>전제</b>: Claude Code에 <b>Atlassian(Confluence) MCP가 연결</b>돼 있어야 한다. 안 돼 있으면 이 단계는 건너뛴다.</p>
+
+      <h3 style="color:#f78166">준비 — 내 개인 공간을 위키 트리로 삼기 (최초 1회)</h3>
+      <p>본인 <b>개인 공간</b>에 프로젝트들을 담을 <b>부모 페이지</b> 하나를 두고, 거기로 발행한다. Claude에게 알려줄 값은 딱 둘: <b>space key</b>와 <b>부모 page ID</b>.</p>
+
+      <p><b>① 개인 공간 들어가기</b> — 우측 상단 <b>프로필</b> 클릭 → <b>개인 공간</b>.</p>
+      <div class="mock">
+        <div class="mockbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:8px;color:var(--muted)">Confluence</span><span style="margin-left:auto" class="hi-box">👤 프로필 ▾</span></div>
+        <div class="menu">
+          <div class="mi hi">개인 공간 ←</div>
+          <div class="mi">최근 조회</div><div class="mi">프로필</div><div class="mi">환경설정</div><div class="mi">로그아웃</div>
+        </div>
+      </div>
+
+      <p style="margin-top:18px"><b>② 부모 페이지 만들기</b> — 개인 공간 홈에서 <b>만들기</b> 버튼으로 카탈로그용 페이지를 하나 만든다 (예: <code>내 LLMwiki</code> 또는 <code>PRD 모음</code>). 앞으로 모든 프로젝트가 이 아래에 자식 페이지로 쌓인다.</p>
+
+      <p><b>③ URL에서 두 값 뽑기</b> — 그 부모 페이지의 주소창을 보면 둘 다 들어있다:</p>
+      <div class="urlbar">
+        <span class="u">wiki.daumkakao.com/spaces/</span><span class="u key">~your.id</span><span class="u">/pages/</span><span class="u pid">1234567890</span><span class="u">/내-LLMwiki</span>
+      </div>
+      <div class="urlnote">
+        <div><span class="sw key"></span><b>space key</b> = <code>~your.id</code> &nbsp;<span class="muted">(개인 공간은 <code>~</code> + 본인 아이디. <code>/spaces/</code> 바로 다음)</span></div>
+        <div><span class="sw pid"></span><b>부모 page ID</b> = <code>1234567890</code> &nbsp;<span class="muted">(<code>/pages/</code> 바로 다음 숫자)</span></div>
+      </div>
+
+      <p style="margin-top:18px"><b>④ Claude에게 한 번 알려주고 기록</b> — 이후엔 Claude가 CLAUDE.md에 저장해 재사용한다:</p>
+      <pre class="prompt"><code>내 컨플 발행 설정 기록해줘.
+space key: ~your.id / 부모 page ID: 1234567890 (내 개인 공간의 'PRD 모음')
+앞으로 발행은 이 페이지 아래에 자식으로 만들어줘.</code></pre>
+
+      <h3 style="color:#f78166;margin-top:28px">발행 — 등록 / 갱신</h3>
+      <p><b>등록</b> — 프로젝트를 그 부모 아래 페이지로 올린다:</p>
+      <pre class="prompt"><code>{프로젝트} 를 내 컨플루언스에 페이지로 올려줘.</code></pre>
+      <p><b>갱신</b> — 내용이 바뀌면 다시 올린다 (Claude가 version+1로 충돌 없이 갱신):</p>
+      <pre class="prompt"><code>{프로젝트} 컨플 페이지 최신 내용으로 갱신해줘.</code></pre>
+      <div class="callout warn"><b>⚠️ 실제 위키에 쓰는 작업이다.</b> ① 기본은 <b>개인 공간</b> — 팀 스페이스는 명시 지시할 때만. ② <b>삭제·덮어쓰기는 Claude가 대상 페이지를 보여주고 확인받은 뒤에만</b> 실행. ③ 생성된 페이지 ID는 CLAUDE.md의 "공유처 페이지 ID 매핑"에 자동 기록돼, 다음부터 같은 페이지를 안전하게 갱신한다.</div>
+    </div></div>
+
+    <h2 id="claudemd"><span class="n">07</span>CLAUDE.md 전문</h2>
+    <p>위키의 모든 동작은 이 파일 하나에서 나온다. <a href="CLAUDE.md" target="_blank">원문 열기 →</a></p>
+    <details>
+      <summary>CLAUDE.md 펼쳐보기 (동작 3개 핵심)</summary>
+      <pre><code>### 동작 A — 초기화 (최초 1회) ※ 로컬용엔 빠짐
+경로를 주면: 로컬용 CLAUDE.md 생성 + raw/ + wiki/(index·log·cross_issues) 생성 + [INIT] 기록.
+업무/팀은 묻지 않음(여러 프로젝트를 담는 그릇). 프로젝트 폴더는 누적 때 생성.
+
+### 동작 B — 누적 (반복)
+소스만 주면: 소스 읽기 → 프로젝트 판단(애매하면 확인) → overview 6섹션 작성,
+다이어그램은 flows.md → 출처 명시 → index.md·log.md 갱신 → 교차 미결은 cross_issues.md.
+
+### 동작 C — 조회
+"프로젝트 목록 보여줘" → index.md 기준 프로젝트·버전·상태 나열 → 고르면 overview 요약.
+
+### 동작 D — 발행 (심화) ※ MCP/git 연동 시
+Confluence: 개인 스페이스 기본 · 수정은 version+1 · 삭제/덮어쓰기 전 확인 · pageId 매핑 기록.
+GitHub: 내부 내용이면 private 레포 · 민감파일 .gitignore 점검.</code></pre>
+    </details>
+
+    <h2 id="prompts"><span class="n">08</span>복붙 프롬프트</h2>
+    <h3>세션 시작 / 현황</h3>
+    <pre class="prompt"><code>지금까지 진행상황 알려줘.</code></pre>
+    <h3>소스 누적</h3>
+    <pre class="prompt"><code>이 소스 wiki화해줘: {URL}</code></pre>
+    <h3>프로젝트 목록 / 조회</h3>
+    <pre class="prompt"><code>프로젝트 목록 보여줘</code></pre>
+    <h3>버전업 (누락 체크)</h3>
+    <pre class="prompt"><code>{프로젝트}를 v2로 버전업할 건데, 이전 버전의 모든 항목을 나열하고
+신버전에 반영/변형흡수/누락 중 무엇인지 매핑해줘. 누락이 있으면 먼저 알려줘.</code></pre>
+    <h3>회의록 추가</h3>
+    <pre class="prompt"><code>방금 회의 내용 정리해서 {프로젝트} meetings.md에 append 해줘.
+결정사항과 액션아이템 분리해서.</code></pre>
+    <h3>발행 · 심화</h3>
+    <pre class="prompt"><code>이 위키를 GitHub에 올려줘 (내부 내용 있으니 private).
+{프로젝트} 를 내 컨플루언스 개인 스페이스에 올려줘 / 갱신해줘.</code></pre>
+
+    <h2 id="faq"><span class="n">09</span>FAQ</h2>
+    <h3>레포를 클론해야 하나요?</h3>
+    <p>아니요. 1번 초기화 프롬프트만 붙여넣으면 Claude가 필요한 파일을 직접 만듭니다. 이 레포는 가이드 호스팅 + 참고용입니다.</p>
+    <h3>Confluence 연동이 안 돼 있으면?</h3>
+    <p>누적(동작 B)은 로컬 파일·링크로 대체하면 되고, <b>발행(동작 D-Confluence)은 그냥 건너뛰면 됩니다.</b> 1~5단계(로컬 위키 + GitHub)만으로도 완결됩니다. Confluence 발행은 Atlassian MCP가 연결된 사람만 6단계로 진행하세요.</p>
+    <h3>실습장에서 Confluence에 잘못 쓰면 어쩌죠?</h3>
+    <p>그래서 <b>기본이 개인 스페이스</b>이고, <b>삭제·덮어쓰기는 Claude가 대상을 보여주고 확인받은 뒤에만</b> 실행합니다. 팀 스페이스는 명시적으로 지시할 때만 건드립니다. 발표 시연도 본인 개인 스페이스에서 하시길 권합니다.</p>
+    <h3>CLAUDE.md가 너무 길어지면?</h3>
+    <p>안 쓰는 규칙(예: 공유처 동기화)을 지우세요. 짧고 핵심만 있는 CLAUDE.md가 가장 잘 작동합니다.</p>
+
+    <footer>
+      <p><b>LLMwiki</b> · made by jenny.by · 물류플랫폼팀 AI 스터디 2026</p>
+      <p><a href="https://github.com/jennyby-ops/llmwiki-template" target="_blank">GitHub 레포 →</a></p>
+    </footer>
+  </main>
+</div>
+<script>
+document.querySelectorAll('pre').forEach(pre=>{
+  const b=document.createElement('button');
+  b.className='copy';b.textContent='복사';
+  b.onclick=()=>{navigator.clipboard.writeText(pre.querySelector('code').innerText);
+    b.textContent='복사됨';b.classList.add('ok');
+    setTimeout(()=>{b.textContent='복사';b.classList.remove('ok')},1400);};
+  pre.appendChild(b);
+});
+</script>
+</body>
+</html>
